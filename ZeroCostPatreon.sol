@@ -1,10 +1,11 @@
 pragma solidity ^0.8.0;
 
+// We developed and tested this using https://remix.ethereum.org/
+
 contract PatreonVault {
     mapping(address => uint256) public balance;
     MockStake public mockStake;
     address payable public creator;
-    
     
     receive() external payable {
         // React to receiving ether
@@ -43,22 +44,24 @@ contract MockStake {
     mapping(address => uint256) public interest;
     mapping(address => uint256) public lastTime;
     uint256 private yps = 1;
+
     receive() external payable {
         // React to receiving ether
     }
     
     function calcInterest() internal {
-        uint256 l = lastTime[msg.sender];
+        uint256 last = lastTime[msg.sender];
         uint256 curr = block.timestamp;
-        if (l != 0){
-            uint256 current = balance[msg.sender] + interest[msg.sender];
-            for (uint period = 0; period < curr - l; period++) {
-                current = current * (100 + yps) / 100;
+        if (last != 0){
+            uint256 total = balance[msg.sender] + interest[msg.sender];
+            for (uint period = 0; period < curr - last; period++) {
+                total = total * (100 + yps) / 100;
             }
-            interest[msg.sender] = current - balance[msg.sender];
+            interest[msg.sender] = total - balance[msg.sender];
         }
         lastTime[msg.sender] = curr;
     }
+
     function withdrawInterest() payable external {
         calcInterest();
         require(interest[msg.sender] > 0);
@@ -77,5 +80,4 @@ contract MockStake {
         balance[msg.sender] -= amount;
         payable(msg.sender).transfer(amount);
     }
-
 }
