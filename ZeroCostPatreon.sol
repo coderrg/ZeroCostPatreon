@@ -30,9 +30,7 @@ contract PatreonVault {
     
     function withdrawInterest() payable external {
         require(msg.sender == creator);
-        uint256 b = address(this).balance;
         mockStake.withdrawInterest();
-        b = address(this).balance;
         payable(msg.sender).transfer(address(this).balance);
     }
     
@@ -75,8 +73,8 @@ contract MockStake {
     }
     
     function withdrawPrincipal(uint256 amount) payable public {
-        require(balance[msg.sender] >= amount, "Not enough balance");
         calcInterest();
+        require(balance[msg.sender] >= amount, "Not enough balance");
         balance[msg.sender] -= amount;
         payable(msg.sender).transfer(amount);
     }
